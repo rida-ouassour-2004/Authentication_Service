@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-auth
+    environment:
+      POSTGRES_USER: rida
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+
+  auth-service:
+    build: .
+    container_name: auth-microservice
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=rida
+      - SPRING_DATASOURCE_PASSWORD=password123
