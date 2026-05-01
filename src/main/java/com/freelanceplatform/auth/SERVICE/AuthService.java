@@ -21,49 +21,36 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService; // Ajout requis ici
 
     public AuthResponse register(RegisterRequest request) {
-        // 1. Vérification
         if(userRepository.existsByEmail(request.email())) {
             throw new RuntimeException("Cet email est déjà utilisé");
         }
 
-        // 2. Création de l'entité
         User user = new User();
         user.setEmail(request.email());
-        // Hashage du mot de passe avec BCrypt
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRoles(request.roles() == null ? Set.of(Role.USER) : request.roles());
+        user.setVerified(false);
 
-        // 3. Sauvegarde
         userRepository.save(user);
 
-        // 4. Génération du token
-        String token = jwtService.generateToken(user);
-        return new AuthResponse(token);
+        try {
+            String verificationToken = jwtService.generateVerificationToken(user);
+            emailService.sendVerificationEmail(user, verificationToken);
+            System.out.println("DEBUG: Email envoyé avec succès");
+        } catch (Exception e) {
+            System.err.println("DEBUG ERROR: L'envoi du mail a échoué : " + e.getMessage());
+            e.printStackTrace();
+            return new AuthResponse("Utilisateur créé, mais l'envoi du mail a échoué. Contactez le support.");
+        }
+
+        return new AuthResponse("Inscription réussie ! Vérifiez vos mails.");
     }
 
-    public AuthResponse login(LoginRequest request) {
-        // 1. On demande à Spring Security de vérifier le couple Email/Password
-        // Si c'est incorrect (mauvais mot de passe ou email), il lance une exception automatiquement
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
-
-        // 2. Si on arrive ici, c'est que l'utilisateur est authentifié !
-        // On le récupère depuis la base de données
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé après authentification"));
-
-        // 3. On génère le token avec ses informations
-        String token = jwtService.generateToken(user);
-
-        // 4. On renvoie la réponse au client
-        return new AuthResponse(token);
-    }
 
 }
+
+
 

@@ -24,6 +24,8 @@ public class User implements UserDetails {
     private Long id;
     private String email;
     private String password;
+    @Column(nullable = false)
+    private boolean isVerified = false;
     @ElementCollection(fetch = FetchType.EAGER) // Charge les rôles immédiatement
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
