@@ -1,7 +1,14 @@
 package com.freelanceplatform.auth.SERVICE;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +17,8 @@ import java.util.Map;
 public class JwtService {
 
     // Cette clé doit faire au moins 256 bits (32 caractères)
-    private static final String SECRET_KEY = "votre_cle_secrete_tres_longue_et_securisee_pour_le_hmac";
+// Exemple d'une clé valide en Base64 (assez longue pour HS256)
+    private static final String SECRET_KEY = "Zm9ydHktdHdvLWNoYXJhY3RlcnMtc2VjcmV0LWtleS1tdXN0LWJlLXZlcnktbG9uZw==";
     private static final long EXPIRATION_TIME = 86400000; // 24 heures en millisecondes
 
     // 1. GÉNÉRATION : Créer le token
